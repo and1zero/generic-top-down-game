@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Godot CI
 
 env:
   GODOT_VERSION: 4.3
@@ -18,7 +18,8 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  export-web:
+  # build job
+  web-build:
     name: Web Export
     runs-on: ubuntu-latest
     container:
@@ -30,23 +31,35 @@ jobs:
           lfs: true
       - name: Setup
         run: |
-          mkdir -v -p ~/.local/share/godot/templates
-          mv /root/.local/share/godot/templates/${GODOT_VERSION}.stable ~/.local/share/godot/templates/${GODOT_VERSION}.stable
+          mkdir -v -p ~/.local/share/godot/export_templates
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
       - name: Web Build
         run: |
           mkdir -v -p build/web
           EXPORT_DIR="$(readlink -f build)"
-          cd $PROJECT_PATH
           godot --headless --verbose --export-release "Web" "$EXPORT_DIR/web/index.html"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web
           path: build/web
-      # Installing rsync is needed in order to deploy to GitHub Pages. Without it, the build will fail.
-      - name: Install rsync 📚
-        run: |
-          apt-get update && apt-get install -y rsync
+
+  # deploy job
+  web-deploy:
+    name: Web Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: web-build
+    # only deploy the main branch
+    if: github.ref == 'refs/heads/main'
+    steps:
+      # Download artifact from previous build
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: build/web
       - name: Deploy to GitHub Pages 🚀
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
