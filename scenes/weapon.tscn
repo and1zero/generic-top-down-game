@@ -1,0 +1,31 @@
+[gd_scene load_steps=4 format=3 uid="uid://14gi7g88scvq"]
+
+[ext_resource type="Script" path="res://scripts/weapon.gd" id="1_cieqq"]
+[ext_resource type="Texture2D" uid="uid://dyqrqo441l07q" path="res://assets/Weapons/weaponR2.png" id="1_srle0"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_y7svd"]
+radius = 520.201
+
+[node name="Weapon" type="Area2D"]
+collision_layer = 0
+collision_mask = 2
+script = ExtResource("1_cieqq")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(10, 10)
+shape = SubResource("CircleShape2D_y7svd")
+
+[node name="WeaponR2" type="Sprite2D" parent="."]
+position = Vector2(0, -3.00003)
+rotation = 0.00709575
+texture = ExtResource("1_srle0")
+
+[node name="Muzzle" type="Marker2D" parent="WeaponR2"]
+unique_name_in_owner = true
+position = Vector2(491.883, 404.52)
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 0.3
+autostart = true
+
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
